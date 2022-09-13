@@ -70,3 +70,11 @@ class App:
         for task in completed_tasks:
             if not self.is_task_done(task):
                 self.mark_task_as_done(task)
+
+def main():
+    import sys
+    app_name = sys.argv[1]
+    db.insert("app", name=app_name, score=0, current_task="homepage")
+
+if __name__ == "___main__":
+    main()
