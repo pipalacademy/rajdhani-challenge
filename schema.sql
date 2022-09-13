@@ -1,11 +1,11 @@
 create table app (
     id integer primary key,
-    domain text,
+    name text unique,
     current_task text,
     score int,
     healthy int default 1,
-    created text,
-    last_updated text
+    created text default CURRENT_TIMESTAMP,
+    last_updated text default CURRENT_TIMESTAMP
 );
 
 -- the completed_tasks table maintains the list of tasks that are
@@ -16,7 +16,7 @@ create table completed_tasks (
     app_id integer references app(id),
     task text,
     broken integer default 0,
-    timestamp text
+    timestamp text default CURRENT_TIMESTAMP
 );
 
 -- changelog maintains all the changes to an app
@@ -29,7 +29,7 @@ create table completed_tasks (
 create table changelog (
     id integer primary key,
     app_id integer references app(id),
-    timestamp text,
+    timestamp text default CURRENT_TIMESTAMP,
     type text,
     message text
 );

@@ -12,6 +12,28 @@
         <button type="button" class="btn btn-outline-secondary btn-lg px-4">Secondary</button>
       </div> -->
     </div>
-  </div>
+</div>
 
+<div id="leader-board" class="container">
+  <h2 class="text-center2">Leader Board</h2>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Tasks Completed</th>
+        <th>Last Updated</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for app in apps %}
+      <tr>
+        <td><a href="/{{app.name}}">{{app.name}}</a></td>
+        <td>{{app.score}}</td>
+        <td>{{datestr(app.last_updated)}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 {% endblock %}
