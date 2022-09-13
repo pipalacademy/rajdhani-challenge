@@ -23,7 +23,7 @@ def app_page(name):
         abort(404)
     return render_template("app.html", app=app, tasks=TASKS.values())
 
-@app.route("/<name>/deploy")
+@app.route("/<name>/deploy", methods=["POST"])
 def app_deploy(name):
     app = App.find(name)
     if not app:

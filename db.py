@@ -23,7 +23,7 @@ class App:
         self.name = row.name
         self.current_task = row.current_task
         self.score = row.score
-        self.creted = self.parse_timestamp(row.created)
+        self.created = self.parse_timestamp(row.created)
         self.last_updated = self.parse_timestamp(row.last_updated)
 
     def parse_timestamp(self, timestamp):
