@@ -1,14 +1,20 @@
 from flask import Flask, render_template, abort, jsonify
+from jinja2 import Markup
 from db import App
 import web
+import markdown
 from tasks import TASKS, Site
 
 app = Flask(__name__)
 
+def markdown_to_html(md):
+    return Markup(markdown.markdown(md))
+
 @app.context_processor
 def app_context():
     return {
-        "datestr": web.datestr
+        "datestr": web.datestr,
+        "markdown_to_html": markdown_to_html,
     }
 
 @app.route("/")
