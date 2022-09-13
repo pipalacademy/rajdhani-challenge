@@ -59,22 +59,30 @@ class App:
     def add_changelog(self, type, message):
         db.insert("changelog", app_id=self.id, type=type, message=message)
 
+    def _update(self, **kwargs):
+        db.update("app", **kwargs, where="id=$id", vars={"id": self.id})
+
+    def update_score(self):
+        rows = db.where("completed_tasks", app_id=self.id).list()
+        score = len(rows)
+        self._update(score=score)
+
     def update_status(self, status):
         self.add_changelog("deploy", "Deployed the app")
-        db.update("app",
-            current_task=status['current_task'],
-            where="id=$id",
-            vars={"id": self.id})
+        self._update(current_task=status['current_task'])
 
         completed_tasks = [task for task, done in status['status'].items() if done]
         for task in completed_tasks:
             if not self.is_task_done(task):
                 self.mark_task_as_done(task)
 
+        self.update_score()
+
 def main():
     import sys
     app_name = sys.argv[1]
     db.insert("app", name=app_name, score=0, current_task="homepage")
+    print("Created new app", app_name)
 
-if __name__ == "___main__":
+if __name__ == "__main__":
     main()
