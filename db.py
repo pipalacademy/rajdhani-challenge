@@ -17,5 +17,29 @@ def process_app(app):
     app.last_updated = parse_timestamp(app.last_updated)
     return app
 
-def parse_timestamp(timestamp):
-    return datetime.datetime.fromisoformat(timestamp)
+class App:
+    def __init__(self, row):
+        self.id = row.id
+        self.name = row.name
+        self.current_task = row.current_task
+        self.score = row.score
+        self.creted = self.parse_timestamp(row.created)
+        self.last_updated = self.parse_timestamp(row.last_updated)
+
+    def parse_timestamp(self, timestamp):
+        return datetime.datetime.fromisoformat(timestamp)
+
+    @classmethod
+    def find_all(cls):
+        rows = db.select("app", order="score desc")
+        return [cls(row) for row in rows]
+
+    @classmethod
+    def find(cls, name):
+        row = db.where("app", name=name).first()
+        if row:
+            return cls(row)
+
+    def is_task_done(self, task_name):
+        rows = db.where("completed_tasks", app_id=self.id, task=task_name)
+        return bool(rows)
