@@ -43,3 +43,11 @@ class App:
     def is_task_done(self, task_name):
         rows = db.where("completed_tasks", app_id=self.id, task=task_name)
         return bool(rows)
+
+    def get_changelog(self):
+        rows = db.where("changelog", app_id=self.id, order="timestamp desc")
+        return [self._process_changelog(row) for row in rows]
+
+    def _process_changelog(self, row):
+        row.timestamp = self.parse_timestamp(row.timestamp)
+        return row
