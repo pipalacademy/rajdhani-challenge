@@ -1,5 +1,15 @@
+:root {
+    --c1: #f4ebd0;
+    --c2: #fff;
+}
+
 
 #home-hero {
-    background: #f4ebd0;
+    background: var(--c1);
     margin-top: 0px !important;
+}
+
+body {
+    background: var(--c2);
+    color: #444;
 }

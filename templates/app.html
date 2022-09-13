@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>{{app.name}}</h1>
+  <div>{{app.score}} tasks completed | Last updates {{datestr(app.last_updated) }}</div>
+{% endblock %}
