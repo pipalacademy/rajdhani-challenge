@@ -1,6 +1,8 @@
 import requests
 import inspect
 
+from hamr import HamrError, hamr
+
 DOMAIN = "rajdhani.pipal.in"
 
 class Site:
@@ -12,6 +14,15 @@ class Site:
     def get(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
         return requests.get(url, **kwargs)
+
+    def sync(self):
+        try:
+            hamr.sync_app(self.name)
+        except HamrError:
+            # TODO: handle this better
+            return False
+
+        return True
 
     def is_homepage_enabled(self):
         return "<h2>Search Trains</h2>" in self.get("/").text
