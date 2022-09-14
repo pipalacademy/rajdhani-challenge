@@ -1,0 +1,16 @@
+name: deploy
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pipalacademy/hamr@v0.2
+        with:
+          server_url: https://hamr.rajdhani.pipal.in
+          app_name: rajdhani
