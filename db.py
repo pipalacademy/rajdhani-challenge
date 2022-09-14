@@ -1,7 +1,9 @@
+import os
 import web
 import datetime
 
-db = web.database("sqlite:///rajdhani.db")
+db_uri = os.getenv("RAJDHANI_DB_URI", "sqlite:///rajdhani.db")
+db = web.database(db_uri)
 
 def get_apps():
     apps = db.select("app", order="score desc")
