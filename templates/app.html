@@ -1,8 +1,15 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1>{{app.name}}</h1>
-  <div>{{app.score}} tasks completed | Current Task: {{ app.current_task }} | Last updates {{datestr(app.last_updated) }}</div>
+  <div class="my-3">
+    <div class="mb-3">
+      <h1 class="mb-0">{{app.name}}</h1>
+      <a href="https://{{ app.name }}.rajdhani.pipal.in" class="text-decoration-none" target="_blank">
+        Visit website
+      </a>
+    </div>
+    <div>{{app.score}} tasks completed | Current Task: {{ app.current_task }} | Last updated {{datestr(app.last_updated) }}</div>
+  </div>
 
   <h2>Tasks</h2>
 
