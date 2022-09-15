@@ -35,10 +35,12 @@ def app_deploy(name):
     if not app:
         abort(404)
     site = Site(app.name)
-    synced = site.sync()
-    if not synced:
-        # TODO: handle this better
-        abort(500)
+    sync_status = site.sync()
+    if not sync_status.ok:
+        return jsonify({
+            "error": "deployment failed to sync",
+            "message": sync_status.message
+        }), 500
     status = site.get_status()
     app.update_status(status)
     return jsonify(status)

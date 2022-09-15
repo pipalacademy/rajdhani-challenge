@@ -1,5 +1,6 @@
 import requests
 import inspect
+from collections import namedtuple
 
 from hamr import HamrError, hamr
 
@@ -16,13 +17,14 @@ class Site:
         return requests.get(url, **kwargs)
 
     def sync(self):
+        HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
+
         try:
             hamr.sync_app(self.name)
-        except HamrError:
-            # TODO: handle this better
-            return False
+        except HamrError as e:
+            return HamrResponse(ok=False, message=str(e))
 
-        return True
+        return HamrResponse(ok=True, message="")
 
     def is_homepage_enabled(self):
         return "<h2>Search Trains</h2>" in self.get("/").text

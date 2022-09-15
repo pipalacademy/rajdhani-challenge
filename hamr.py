@@ -23,7 +23,8 @@ class Hamr:
             except requests.exceptions.JSONDecodeError:
                 pass
             else:
-                message += f"\nstatus: {data['status']}\nmessage: {data['message']}"
+                error_status, error_msg = data["status"], data.get("message", "")
+                message += f"\nstatus: {error_status}\nmessage: {error_msg}"
 
             raise HamrError(message)
 
