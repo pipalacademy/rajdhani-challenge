@@ -15,9 +15,11 @@
 
   {% for task in tasks %}
 
-  {% set card_style = 'border-success text-success' if app.is_task_done(task.name) else (
-                      'border-warning' if task.name == app.current_task else
-                      'border-secondary text-secondary' ) %}
+  {% set task_status = app.get_task_status(task.name) %}
+  {% set card_style = 'border-success text-success'     if task_status == 'success' else (
+                      'border-warning'                  if task_status == 'current' else (
+                      'border-danger text-danger'       if task_status == 'failing' else
+                      'border-secondary text-secondary' )) %}
 
   <div class="card my-2 {{ card_style }}">
     <div class="card-body py-3">

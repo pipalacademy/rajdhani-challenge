@@ -19,6 +19,14 @@ def process_app(app):
     app.last_updated = parse_timestamp(app.last_updated)
     return app
 
+
+class TaskStatus:
+    success = "success"
+    current = "current"
+    pending = "pending"
+    failing = "failing"
+
+
 class App:
     def __init__(self, row):
         self.id = row.id
@@ -49,6 +57,15 @@ class App:
     def mark_task_as_done(self, task_name):
         self.add_changelog("task-done", f"Completed task {task_name}.")
         db.insert("completed_tasks", app_id=self.id, task=task_name)
+
+    def get_task_status(self, task_name):
+        # TODO: add check for 'failing' status
+        if self.is_task_done(task_name):
+            return TaskStatus.success
+        elif self.current_task == task_name:
+            return TaskStatus.current
+        else:
+            return TaskStatus.pending
 
     def get_changelog(self):
         rows = db.where("changelog", app_id=self.id, order="timestamp desc")
