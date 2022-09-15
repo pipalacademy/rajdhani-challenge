@@ -96,6 +96,130 @@ def task_autocomplete(site):
     assert "MAQ" in site.get_station_autocomplete("Mangalu")
     assert "MAJN" in site.get_station_autocomplete("Mangalu")
 
+@task("search-trains")
+def task_search_trains():
+    """Find the trains on search.
+
+    The `search_trains` functions in the db module is called
+    to find the matching trains from source station to destination
+    when the user searches for trains. Currently, that function
+    returns a placeholder result. Replace that with the correct
+    implementation.
+
+    File: `rajdhani/db.py`<br>
+    Function: `search_trains`
+    """
+    assert False, "Not yet implemented"
+
+@task("search-trains-with-date")
+def task_search_trains_with_date():
+    """Support date and ticket class in train search.
+
+    Enable date and class fields in the search form by setting
+    `flag_date_class_in_search` in `config.py` to `True`.
+
+    Update the `search_trains` function to consider the week of
+    the day from the date and the ticket class to only include the
+    trains that run that the specified week day.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+    """
+    assert False, "Not yet implemented"
+
+@task("search-filters")
+def task_search_filters():
+    """Implement search filters.
+
+    Enable the filters on arrival time and departure time by setting
+    the flag `flag_search_filters` to `True` in the `config.py`.
+
+    Consider the arrival time and departure time filters when searching
+    for trains.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+    """
+    assert False, "Not yet implemented"
+
+@task("train-schedule")
+def task_train_schedule():
+    """Show schedule of a train.
+
+    Enable link to show the schedule of each train in the search results
+    by setting the flag `flag_show_schedule_link` in the config to `True`.
+
+    Implement the `get_train_schedule` function that takes the
+    train number as argument and returns the schedule.
+
+    File: `rajdhani/db.py` <br>
+    Function: `get_train_schedule`
+    """
+    assert False, "Not yet implemented"
+
+@task("seat-availability")
+def task_seat_availability():
+    """Show availability of seats for each train.
+
+    Enable showing the number of seats available in each ticket class
+    for each train in the search results by setting the flag
+    `flag_seat_availability` in the config to `True`.
+
+    Implement the function `get_seat_availability` that takes the
+    train number as argument and returns the seat avaiblity for
+    each ticket class.
+
+    File: `rajdhani/db.py` <br>
+    Function: `get_seat_availability`
+    """
+    assert False, "Not yet implemented"
+
+@task("book-ticket")
+def task_book_ticket():
+    """Implement booking a ticket.
+
+    Enable ticket booking by setting the flag
+    `flag_ticket_booking` in the config to `True`.
+
+    Implement the function `book_ticket` that takes train
+    and passenger details and books a ticket by adding an entry
+    in the database table.
+
+    After booking a ticket, the number of available seats for that
+    train in the booked ticket class should be reduced by one.
+
+    File: `rajdhani/db.py` <br>
+    Function: `book_ticket`
+    """
+    assert False, "Not yet implemented"
+
+@task("email-conformation")
+def task_email_confirmation():
+    """Send an email to confirm the successful booking.
+
+    Send an email to the passenger confirming the reservation.
+
+    File: `rajdhani/booking.py` <br>
+    Function: `send_email_confirmation`
+    """
+    assert False, "Not yet implemented"
+
+@task("login-with-magic-link")
+def task_login_with_magic_link():
+    """Enable login with a magic link.
+
+    Details coming soon..
+    """
+    assert False, "Not yet implemented"
+
+@task("my-trips")
+def task_my_trips():
+    """Show my trips page for logged in users.
+
+    Details coming soon..
+    """
+    assert False, "Not yet implemented"
+
 def main():
     import sys
     name = sys.argv[1]
