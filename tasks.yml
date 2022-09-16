@@ -10,6 +10,58 @@ checks:
       url: /
       expected_text: "<h2>Search Trains</h2>"
 ---
+name: search-trains
+title: Find trains on search
+description: |
+  The `search_trains` functions in the db module is called
+  to find the matching trains from source station to destination
+  when the user searches for trains. Currently, that function
+  returns a placeholder result. Replace that with the correct
+  implementation.
+
+  For this task, you just need to focus on the from_station_code
+
+  File: `rajdhani/db.py`<br>
+  Function: `search_trains`
+checks:
+  - check_search_trains:
+      from_station: SBC
+      to_station: MAS
+      expected_trains:
+        - 12028
+        - 12608
+        - 12640
+        - 12658
+        - 12610
+---
+name: search-trains-with-ticketclass
+title: Support ticket class in train search
+description: |
+    Enable ticket class fields in the search form by setting
+    `flag_ticketclass_in_search` in `config.py` to `True`.
+
+    Update the `search_trains` function to consider only the trains
+    that has that ticket class.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+checks:
+  - check_not_implemented
+---
+name: search-filters
+title: Implement search filters
+description: |
+    Enable the filters on arrival time and departure time by setting
+    the flag `flag_search_filters` to `True` in the `config.py`.
+
+    Consider the arrival time and departure time filters when searching
+    for trains.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+checks:
+  - check_not_implemented
+---
 name: autocomplete
 title: Implement the autocomplete on the home page.
 description: |
@@ -46,48 +98,6 @@ checks:
         - MPK
         - MSF
         - MSB
----
-name: search-trains
-title: Find trains on search
-description: |
-  The `search_trains` functions in the db module is called
-  to find the matching trains from source station to destination
-  when the user searches for trains. Currently, that function
-  returns a placeholder result. Replace that with the correct
-  implementation.
-
-  File: `rajdhani/db.py`<br>
-  Function: `search_trains`
-checks:
-  - check_not_implemented
----
-name: search-trains-with-ticketclass
-title: Support ticket class in train search
-description: |
-    Enable ticket class fields in the search form by setting
-    `flag_ticketclass_in_search` in `config.py` to `True`.
-
-    Update the `search_trains` function to consider only the trains
-    that has that ticket class.
-
-    File: `rajdhani/db.py` <br>
-    Function: `search_trains`
-checks:
-  - check_not_implemented
----
-name: search-filters
-title: Implement search filters
-description: |
-    Enable the filters on arrival time and departure time by setting
-    the flag `flag_search_filters` to `True` in the `config.py`.
-
-    Consider the arrival time and departure time filters when searching
-    for trains.
-
-    File: `rajdhani/db.py` <br>
-    Function: `search_trains`
-checks:
-  - check_not_implemented
 ---
 name: train-schedule
 title: Show schedule of a train

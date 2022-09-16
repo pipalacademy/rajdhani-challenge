@@ -136,6 +136,53 @@ class check_autocomplete(Check):
                 f"but found: {' '.join(stations)}")
             raise CheckFailed(message)
 
+@register_check
+class check_search_trains(Check):
+    def __init__(self, from_station, to_station, expected_trains):
+        self.from_station = from_station
+        self.to_station = to_station
+        self.expected_trains = [str(n) for n in expected_trains]
+        self.title = f"Search Trains: {from_station} -> {to_station}"
+
+    def do_validate(self, site):
+        params = {
+            "from": self.from_station,
+            "to": self.to_station
+        }
+        trains = site.get("/api/search", params=params).json()
+
+        print(trains)
+        numbers = [str(t['number']) for t in trains]
+
+        if sorted(numbers) != sorted(self.expected_trains):
+            message = (
+                f"The result of search_trains({self.from_station!r}, {self.to_station!r}),\n"
+                f"expected the output to include trains: {', '.join(self.expected_trains)},\n"
+                f"but found: {', '.join(numbers)}")
+            raise CheckFailed(message)
+
+        expected_keys = [
+            "number",
+            "name",
+            "from_station_code",
+            "from_station_name",
+            "to_station_code",
+            "to_station_name",
+            "departure",
+            "arrival",
+            "duration_h",
+            "duration_m"
+        ]
+        for t in trains:
+            missing_keys = set(t.keys()) - set(expected_keys)
+            if missing_keys:
+                message = (
+                    "The search_trains function is expected to return list of dicts\n" +
+                    "with the following fields:\n" +
+                    str(expected_keys) + "\n,"
+                    "but found: " + str(list(t.keys())))
+                raise CheckFailed(message)
+
 @dataclass
 class TaskStatus:
     status: str
