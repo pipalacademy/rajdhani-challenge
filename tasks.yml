@@ -1,10 +1,11 @@
 name: homepage
 title: Enable the homepage.
 description: |
-  Set `enable_homepage = True` in the `rajdhani/config.py`.
+  Enable the home page by setting the feature flag `flag_homepage = True`
+  in the `rajdhani/config.py`.
 checks:
   - check_flag:
-      flag: enable_homepage
+      flag: flag_homepage
   - check_webpage_content:
       url: /
       expected_text: "<h2>Search Trains</h2>"

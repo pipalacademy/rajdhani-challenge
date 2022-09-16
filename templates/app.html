@@ -73,7 +73,7 @@
           <p>Status: {{task_status.status}}</p>
 
           <h5>Checks</h5>
-          <ul>
+          <ul class="task-checks">
             {% for check in task_status.checks %}
               <li>{{check.status}} - {{check.title}}
                 {% if check.message %}<br><pre>{{check.message}}</pre>{% endif %}

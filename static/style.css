@@ -13,3 +13,10 @@ body {
     background: var(--c2);
     color: #444;
 }
+
+.task-checks pre {
+    padding: 10px;
+    border-radius: 5px;
+    background: #eee;
+    border: 1px solid #ddd;
+}

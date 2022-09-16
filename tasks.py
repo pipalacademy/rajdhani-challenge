@@ -95,15 +95,18 @@ class check_not_implemented(Check):
         self.title = "Checks are not yet implemented for this task"
 
     def do_validate(self, site):
-        raise CheckFailed()
+        raise CheckFailed("coming soon...")
 
 @register_check
 class check_flag(Check):
     def __init__(self, flag):
+        self.flag = flag
         self.title = f"Checks flag: {flag}"
 
     def do_validate(self, site):
-        pass
+        flags = site.get("/api/flags").json()
+        if not flags.get(self.flag):
+            raise CheckFailed(f"Feature flag `{self.flag}` is not set to `True`.")
 
 @register_check
 class check_webpage_content(Check):
@@ -114,7 +117,7 @@ class check_webpage_content(Check):
 
     def do_validate(self, site):
         if not self.expected_text in site.get(self.url).text:
-            message = "Text `{expected_text}` is expected in web page /, but it is not found."
+            message = f'Text "{self.expected_text}"\nis expected in the web page {site.base_url}{self.url},\nbut it is not found.'
             raise CheckFailed(message)
 
 @register_check
