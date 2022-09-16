@@ -45,14 +45,14 @@
   {% set task_status = app.get_task_status(task.name) %}
 
   {% set card_style = 'border-success text-success'     if task_status.status == 'pass' else (
-                      'border-danger text-danger'       if task_status.status == 'fail' else
                       'border-warning'                  if task.name == app.current_task else (
+                      'border-danger text-danger'       if task_status.status == 'fail' else
                       'border-secondary text-secondary' )) %}
 
   {% set task_icon = SuccessTaskIcon    if task_status.status == 'pass' else (
-                     FailingTaskIcon    if task_status.status == 'fail' else (
                      CurrentTaskIcon    if task.name == app.current_task else (
-                     PendingTaskIcon ))) %}
+                     FailingTaskIcon    if task_status.status == 'fail' else
+                     PendingTaskIcon )) %}
 
   <div class="card my-2 {{ card_style }}">
     <div class="card-body py-3">
