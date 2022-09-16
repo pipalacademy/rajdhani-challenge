@@ -54,6 +54,9 @@ class Site:
             return True
         except AssertionError:
             return False
+        except Exception as e:
+            # TODO: show to error traceback to the user
+            return False
 
 TASKS = {}
 
