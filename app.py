@@ -27,7 +27,7 @@ def app_page(name):
     app = App.find(name)
     if not app:
         abort(404)
-    return render_template("app.html", app=app, tasks=TASKS.values())
+    return render_template("app.html", app=app, tasks=TASKS)
 
 @app.route("/<name>/deploy", methods=["POST"])
 def app_deploy(name):

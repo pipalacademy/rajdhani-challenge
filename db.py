@@ -1,5 +1,6 @@
 import os
 import web
+import json
 import datetime
 
 db_uri = os.getenv("RAJDHANI_DB_URI", "sqlite:///rajdhani.db")
@@ -36,7 +37,7 @@ class App:
             return cls(row)
 
     def is_task_done(self, task_name):
-        rows = db.where("completed_tasks", app_id=self.id, task=task_name)
+        rows = db.where("task", app_id=self.id, name=task_name)
         return bool(rows)
 
     def mark_task_as_done(self, task_name):
@@ -45,10 +46,10 @@ class App:
 
     def get_task_status(self, task_name):
         # TODO: add check for 'failing' status
-        if self.is_task_done(task_name):
-            return TaskStatus.success
-        elif self.current_task == task_name:
+        if self.current_task == task_name:
             return TaskStatus.current
+        elif self.is_task_done(task_name):
+            return TaskStatus.success
         else:
             return TaskStatus.pending
 
@@ -67,7 +68,7 @@ class App:
         db.update("app", **kwargs, where="id=$id", vars={"id": self.id})
 
     def update_score(self):
-        rows = db.where("completed_tasks", app_id=self.id).list()
+        rows = db.where("task", app_id=self.id).list()
         score = len(rows)
         self._update(score=score)
 
@@ -75,12 +76,29 @@ class App:
         self.add_changelog("deploy", "Deployed the app")
         self._update(current_task=status['current_task'])
 
-        completed_tasks = [task for task, done in status['status'].items() if done]
-        for task in completed_tasks:
-            if not self.is_task_done(task):
-                self.mark_task_as_done(task)
+        for task_name, task_status in status['tasks'].items():
+            self.update_task_status(task_name, task_status)
 
         self.update_score()
+
+    def has_task(self, name):
+        return db.where("task", app_id=self.id, name=name).first() is not None
+
+    def update_task_status(self, name, task_status):
+        status = task_status['status']
+        checks = json.dumps(task_status['checks'])
+        if self.has_task(name):
+            db.update("task",
+                status=status,
+                checks=checks,
+                where="name=$name",
+                vars={"name": name})
+        else:
+            db.insert("task",
+                app_id=self.id,
+                name=name,
+                status=status,
+                checks=checks)
 
 def main():
     import sys

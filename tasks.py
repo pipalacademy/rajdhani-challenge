@@ -1,6 +1,10 @@
+from __future__ import annotations
+from cmath import exp
 import requests
-import inspect
+import yaml
+from dataclasses import dataclass, asdict
 from collections import namedtuple
+from typing import List
 
 from hamr import HamrError, hamr
 
@@ -14,6 +18,7 @@ class Site:
 
     def get(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
+        print("GET", url)
         return requests.get(url, **kwargs)
 
     def sync(self):
@@ -32,204 +37,160 @@ class Site:
     def get_station_autocomplete(self, prefix):
         """Returns codes of all the stations matching the prefix.
         """
-        results = self.get("/api/stations", params={"prefix": prefix}).json()
+        results = self.get("/api/stations", params={"q": prefix}).json()
         return [row['code'] for row in results]
 
     def get_status(self):
         """Runs the tests for each task and returns the status for each task.
         """
-        status = {}
-        for task in TASKS.values():
-            is_done = self.verify_task(task)
-            status[task.name] = is_done
-            if not is_done:
+        tasks = {}
+        for task in TASKS:
+            task_status = task.verify(self)
+            tasks[task.name] = asdict(task_status)
+            if task_status.status != "pass":
                 break
+        return dict(tasks=tasks, current_task=task.name)
 
-        return dict(status=status, current_task=task.name)
+@dataclass
+class CheckStatus:
+    title: str
+    status: str = "pass"
+    message: str = ""
 
-    def verify_task(self, task):
-        print(f"[{self.domain}] verifying task {task.name}...")
+    def fail(self, message):
+        self.status = "fail"
+        self.message = message
+        return self
+
+    def error(self, message):
+        self.status = "error"
+        self.message = message
+        return self
+
+CHECKS = {}
+def register_check(check):
+    CHECKS[check.__name__] = check
+    return check
+
+class CheckFailed(Exception):
+    pass
+
+class Check:
+    def validate(self, site):
+        status = CheckStatus(self.title)
         try:
-            task(self)
-            return True
-        except AssertionError:
-            return False
+            self.do_validate(site)
+            return status
+        except CheckFailed as e:
+            return status.fail(str(e))
         except Exception as e:
-            # TODO: show to error traceback to the user
-            return False
+            return status.error(str(e))
 
-TASKS = {}
+    def do_validate(self, site):
+        raise NotImplementedError()
 
-def task(name):
-    def decorator(f):
-        TASKS[name] = Task(name, f)
-        return f
-    return decorator
+@register_check
+class check_not_implemented(Check):
+    def __init__(self):
+        self.title = "Checks are not yet implemented for this task"
+
+    def do_validate(self, site):
+        raise CheckFailed()
+
+@register_check
+class check_flag(Check):
+    def __init__(self, flag):
+        self.title = f"Checks flag: {flag}"
+
+    def do_validate(self, site):
+        pass
+
+@register_check
+class check_webpage_content(Check):
+    def __init__(self, url, expected_text):
+        self.url = url
+        self.expected_text = expected_text
+        self.title = f"Check webpage content: {url}"
+
+    def do_validate(self, site):
+        if not self.expected_text in site.get(self.url).text:
+            message = "Text `{expected_text}` is expected in web page /, but it is not found."
+            raise CheckFailed(message)
+
+@register_check
+class check_autocomplete(Check):
+    def __init__(self, q, expected_stations):
+        self.q = q
+        self.expected_stations = expected_stations
+        self.title = f"Check autocomplete for input: {q}"
+
+    def do_validate(self, site):
+        stations = site.get_station_autocomplete(self.q)
+        if sorted(stations) != sorted(self.expected_stations):
+            message = (
+                f"For Input {self.q},\n"
+                f"expected the output to include stations: {' '.join(self.expected_stations)},\n"
+                f"but found: {' '.join(stations)}")
+            raise CheckFailed(message)
+
+@dataclass
+class TaskStatus:
+    status: str
+    checks: List[CheckStatus]
 
 class Task:
-    def __init__(self, name, func):
+    def __init__(self, name, title, description, checks):
         self.name = name
-        self.func = func
-        doc = inspect.getdoc(func)
-        self.title, self.description = doc.split("\n", 1)
-        self.description = self.description.strip()
+        self.title = title
+        self.description = description
+        self.checks = checks
 
-    def __call__(self, site):
-        return self.func(site)
+    def verify(self, site) -> TaskStatus:
+        print(f"[{site.domain}] verifying task {self.name}...")
 
-@task("homepage")
-def task_homepage(site):
-    """Enable the homepage.
+        results = [c.validate(site) for c in self.checks]
+        print(results)
+        if all(c.status == "pass" for c in results):
+            status = "pass"
+        else:
+            status = "fail"
+        return TaskStatus(status, checks=results)
 
-    Set `enable_homepage = True` in the `rajdhani/config.py`.
-    """
-    assert site.is_homepage_enabled()
+    @classmethod
+    def load_from_file(cls, filename) -> List[Task]:
+        """Loads a list of tasks from a file.
+        """
+        data = yaml.safe_load_all(open(filename))
+        return [cls.from_dict(d) for d in data]
 
-@task("autocomplete")
-def task_autocomplete(site):
-    """Implement the autocomplete on the home page.
+    @classmethod
+    def from_dict(cls, data) -> Task:
+        """Loads a Task from dict.
+        """
+        name = data['name']
+        title = data['title']
+        description = data['description']
+        checks = [cls.parse_check(c) for c in data['checks']]
+        return Task(name, title, description, checks)
 
-    The autocomplete on the home page to select the from and to stations is
-    a dummy implementation. Replace that with a correct implementation.
-    """
-    def assert_autocomplete(q, expected_stations):
-        assert sorted(site.get_station_autocomplete(q)) == sorted(expected_stations)
+    @staticmethod
+    def parse_check(check_data):
+        if isinstance(check_data, str):
+            return CHECKS[check_data]()
+        elif isinstance(check_data, dict) and len(check_data) == 1:
+            name, args = list(check_data.items())[0]
+            cls = CHECKS[name]
+            return cls(**args)
+        else:
+            raise ValueError(f"Invalid check: {check_data}")
 
-    assert_autocomplete("sbc", ["SBC"])
-    assert_autocomplete("bangal", ["SBC", "BNCE", "BNC", "BJY"])
-    assert_autocomplete("guntur", ["GNT", "NGNT"])
-    assert_autocomplete("cst", ["CSTM"])
-    assert_autocomplete("chennai", ["MS", "MSC", "MAS", "MPKT", "MPK", "MSF", "MSB"])
-
-@task("search-trains")
-def task_search_trains():
-    """Find the trains on search.
-
-    The `search_trains` functions in the db module is called
-    to find the matching trains from source station to destination
-    when the user searches for trains. Currently, that function
-    returns a placeholder result. Replace that with the correct
-    implementation.
-
-    File: `rajdhani/db.py`<br>
-    Function: `search_trains`
-    """
-    assert False, "Not yet implemented"
-
-@task("search-trains-with-date")
-def task_search_trains_with_date():
-    """Support date and ticket class in train search.
-
-    Enable date and class fields in the search form by setting
-    `flag_date_class_in_search` in `config.py` to `True`.
-
-    Update the `search_trains` function to consider the week of
-    the day from the date and the ticket class to only include the
-    trains that run that the specified week day.
-
-    File: `rajdhani/db.py` <br>
-    Function: `search_trains`
-    """
-    assert False, "Not yet implemented"
-
-@task("search-filters")
-def task_search_filters():
-    """Implement search filters.
-
-    Enable the filters on arrival time and departure time by setting
-    the flag `flag_search_filters` to `True` in the `config.py`.
-
-    Consider the arrival time and departure time filters when searching
-    for trains.
-
-    File: `rajdhani/db.py` <br>
-    Function: `search_trains`
-    """
-    assert False, "Not yet implemented"
-
-@task("train-schedule")
-def task_train_schedule():
-    """Show schedule of a train.
-
-    Enable link to show the schedule of each train in the search results
-    by setting the flag `flag_show_schedule_link` in the config to `True`.
-
-    Implement the `get_train_schedule` function that takes the
-    train number as argument and returns the schedule.
-
-    File: `rajdhani/db.py` <br>
-    Function: `get_train_schedule`
-    """
-    assert False, "Not yet implemented"
-
-@task("seat-availability")
-def task_seat_availability():
-    """Show availability of seats for each train.
-
-    Enable showing the number of seats available in each ticket class
-    for each train in the search results by setting the flag
-    `flag_seat_availability` in the config to `True`.
-
-    Implement the function `get_seat_availability` that takes the
-    train number as argument and returns the seat avaiblity for
-    each ticket class.
-
-    File: `rajdhani/db.py` <br>
-    Function: `get_seat_availability`
-    """
-    assert False, "Not yet implemented"
-
-@task("book-ticket")
-def task_book_ticket():
-    """Implement booking a ticket.
-
-    Enable ticket booking by setting the flag
-    `flag_ticket_booking` in the config to `True`.
-
-    Implement the function `book_ticket` that takes train
-    and passenger details and books a ticket by adding an entry
-    in the database table.
-
-    After booking a ticket, the number of available seats for that
-    train in the booked ticket class should be reduced by one.
-
-    File: `rajdhani/db.py` <br>
-    Function: `book_ticket`
-    """
-    assert False, "Not yet implemented"
-
-@task("email-conformation")
-def task_email_confirmation():
-    """Send an email to confirm the successful booking.
-
-    Send an email to the passenger confirming the reservation.
-
-    File: `rajdhani/booking.py` <br>
-    Function: `send_email_confirmation`
-    """
-    assert False, "Not yet implemented"
-
-@task("login-with-magic-link")
-def task_login_with_magic_link():
-    """Enable login with a magic link.
-
-    Details coming soon..
-    """
-    assert False, "Not yet implemented"
-
-@task("my-trips")
-def task_my_trips():
-    """Show my trips page for logged in users.
-
-    Details coming soon..
-    """
-    assert False, "Not yet implemented"
+TASKS = Task.load_from_file("tasks.yml")
 
 def main():
-    import sys
+    import sys, json
     name = sys.argv[1]
     site = Site(name)
-    print(site.get_status())
+    print(json.dumps(site.get_status(), indent=2))
 
 if __name__ == "__main__":
     main()

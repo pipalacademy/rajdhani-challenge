@@ -1,0 +1,167 @@
+name: homepage
+title: Enable the homepage.
+description: |
+  Set `enable_homepage = True` in the `rajdhani/config.py`.
+checks:
+  - check_flag:
+      flag: enable_homepage
+  - check_webpage_content:
+      url: /
+      expected_text: "<h2>Search Trains</h2>"
+---
+name: autocomplete
+title: Implement the autocomplete on the home page.
+description: |
+  The autocomplete on the home page to select the from and to stations is
+  a dummy implementation. Replace that with a correct implementation.
+checks:
+  - check_autocomplete:
+      q: sbc
+      expected_stations:
+        - SBC
+  - check_autocomplete:
+      q: bangal
+      expected_stations:
+        - SBC
+        - BNCE
+        - BNC
+        - BJY
+  - check_autocomplete:
+      q: guntur
+      expected_stations:
+        - GNT
+        - NGNT
+  - check_autocomplete:
+      q: cst
+      expected_stations:
+        - CSTM
+  - check_autocomplete:
+      q: chennai
+      expected_stations:
+        - MS
+        - MSC
+        - MAS
+        - MPKT
+        - MPK
+        - MSF
+        - MSB
+---
+name: search-trains
+title: Find trains on search
+description: |
+  The `search_trains` functions in the db module is called
+  to find the matching trains from source station to destination
+  when the user searches for trains. Currently, that function
+  returns a placeholder result. Replace that with the correct
+  implementation.
+
+  File: `rajdhani/db.py`<br>
+  Function: `search_trains`
+checks:
+  - check_not_implemented
+---
+name: search-trains-with-ticketclass
+title: Support ticket class in train search
+description: |
+    Enable ticket class fields in the search form by setting
+    `flag_ticketclass_in_search` in `config.py` to `True`.
+
+    Update the `search_trains` function to consider only the trains
+    that has that ticket class.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+checks:
+  - check_not_implemented
+---
+name: search-filters
+title: Implement search filters
+description: |
+    Enable the filters on arrival time and departure time by setting
+    the flag `flag_search_filters` to `True` in the `config.py`.
+
+    Consider the arrival time and departure time filters when searching
+    for trains.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_trains`
+checks:
+  - check_not_implemented
+---
+name: train-schedule
+title: Show schedule of a train
+description: |
+    Enable link to show the schedule of each train in the search results
+    by setting the flag `flag_show_schedule_link` in the config to `True`.
+
+    Implement the `get_train_schedule` function that takes the
+    train number as argument and returns the schedule.
+
+    File: `rajdhani/db.py` <br>
+    Function: `get_train_schedule`
+checks:
+  - check_flag:
+      flag: flag_show_schedule_link
+  - check_not_implemented
+---
+name: seat-availability
+title: Show availability of seats for each train
+description: |
+  Enable showing the number of seats available in each ticket class
+  for each train in the search results by setting the flag
+  `flag_seat_availability` in the config to `True`.
+
+  Implement the function `get_seat_availability` that takes the
+  train number as argument and returns the seat avaiblity for
+  each ticket class.
+
+  File: `rajdhani/db.py` <br>
+  Function: `get_seat_availability`
+checks:
+  - check_flag:
+      flag: flag_seat_availability
+  - check_not_implemented
+---
+name: book-ticket
+title: Implement booking a ticket.
+description: |
+  Enable ticket booking by setting the flag
+  `flag_ticket_booking` in the config to `True`.
+
+  Implement the function `book_ticket` that takes train
+  and passenger details and books a ticket by adding an entry
+  in the database table.
+
+  After booking a ticket, the number of available seats for that
+  train in the booked ticket class should be reduced by one.
+
+  File: `rajdhani/db.py` <br>
+  Function: `book_ticket`
+checks:
+  - check_flag:
+      flag: flag_ticket_booking
+  - check_not_implemented
+---
+name: email-conformation
+title: Send an email to confirm the successful booking
+description: |
+  Send an email to the passenger confirming the reservation.
+
+  File: `rajdhani/booking.py` <br>
+  Function: `send_email_confirmation`
+checks:
+  - check_not_implemented
+---
+name: login-with-magic-link
+title: Enable login with a magic link
+description: |
+  Description coming soon
+checks:
+  - check_not_implemented
+---
+name: my-trips
+title: Show my trips page for logged in users
+description: |
+  Description coming soon...
+checks:
+  - check_not_implemented
