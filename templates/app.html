@@ -67,9 +67,25 @@
         <p class="card-text">{{markdown_to_html(task.description)}}</p>
 
         <p class="text-muted">
-        {% if app.is_task_done(task.name) %}Status: Complete
-        {% else %}Status: Pending
+        {% set task_status = app.get_task_status(task.name) %}
+
+        {% if task_status %}
+          <p>Status: {{task_status.status}}</p>
+
+          <h5>Checks</h5>
+          <ul>
+            {% for check in task_status.checks %}
+              <li>{{check.status}} - {{check.title}}
+                {% if check.message %}<br><pre>{{check.message}}</pre>{% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          Status: Pending
         {% endif %}
+
+        <pre></pre>
+
         </p>
       </div>
     </div>

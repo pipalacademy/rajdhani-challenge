@@ -84,6 +84,12 @@ class App:
     def has_task(self, name):
         return db.where("task", app_id=self.id, name=name).first() is not None
 
+    def get_task_status(self, name):
+        task_status = db.where("task", app_id=self.id, name=name).first()
+        if task_status:
+            task_status.checks = json.loads(task_status.checks)
+        return task_status
+
     def update_task_status(self, name, task_status):
         status = task_status['status']
         checks = json.dumps(task_status['checks'])
