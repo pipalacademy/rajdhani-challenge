@@ -1,44 +1,35 @@
-create table station (
-    code text primary key,
-    name text,
-    zone text,
-    state text,
-    address text,
-    latitude real,
-    longitude real
+create table app (
+    id integer primary key,
+    name text unique,
+    current_task text,
+    score int,
+    healthy int default 1,
+    created text default CURRENT_TIMESTAMP,
+    last_updated text default CURRENT_TIMESTAMP
 );
 
-create table train (
-    number text primary key,
-    name text,
+-- the completed_tasks table maintains the list of tasks that are
+-- completed for each app. When a completed task is broken due to
+-- a subsequent change, it is marked as broken.
+create table completed_tasks (
+    id integer primary key,
+    app_id integer references app(id),
+    task text,
+    broken integer default 0,
+    timestamp text default CURRENT_TIMESTAMP
+);
+
+-- changelog maintains all the changes to an app
+-- entries could be one of the following types
+--   deployed
+--   task-done
+--   site-unhealthy
+--   site-healthy
+--   tasks-broken
+create table changelog (
+    id integer primary key,
+    app_id integer references app(id),
+    timestamp text default CURRENT_TIMESTAMP,
     type text,
-    zone text,
-    from_station_code text references station(code),
-    from_station_name text,
-    to_station_code text references station(code),
-    to_station_name text,
-    departure text,
-    arrival text,
-    duration_h real,
-    duration_m real,
-    distance real,
-    return_train text,
-    sleeper integer,
-    third_ac integer,
-    second_ac integer,
-    first_ac integer,
-    first_class integer,
-    chair_car integer
+    message text
 );
-
-
-create table schedule (
-    station_code text,
-    station_name text,
-    train_number text,
-    train_name text,
-    day integer,
-    arrival text,
-    departure text
-);
-
