@@ -138,21 +138,35 @@ class check_autocomplete(Check):
 
 @register_check
 class check_search_trains(Check):
-    def __init__(self, from_station, to_station, ticket_class=None, expected_trains=[]):
+    def __init__(self,
+            from_station,
+            to_station,
+            ticket_class=None,
+            departure_time=[],
+            arrival_time=[],
+            expected_trains=[]):
         self.from_station = from_station
         self.to_station = to_station
         self.ticket_class = ticket_class
+        self.departure_time = departure_time
+        self.arrival_time = arrival_time
         self.expected_trains = [str(n) for n in expected_trains]
         self.title = f"Search Trains: {from_station} -> {to_station}"
 
         if ticket_class:
-            self.title += f" [{self.ticket_class}]"
+            self.title += f" [{ticket_class}]"
+        if departure_time:
+            self.title += f" dt={departure_time!r}"
+        if arrival_time:
+            self.title += f" at={arrival_time!r}"
 
     def do_validate(self, site):
         params = {
             "from": self.from_station,
             "to": self.to_station,
-            "class": self.ticket_class
+            "class": self.ticket_class,
+            "dt": self.departure_time,
+            "at": self.arrival_time
         }
         trains = site.get("/api/search", params=params).json()
 
@@ -160,8 +174,8 @@ class check_search_trains(Check):
 
         if sorted(numbers) != sorted(self.expected_trains):
             message = (
-                f"The result of search_trains({self.from_station!r}, {self.to_station!r}),\n"
-                f"expected the output to include trains: {', '.join(self.expected_trains)},\n"
+                f"The result of search_trains({self.from_station!r}, {self.to_station!r})\n"
+                f"is expected to include trains: {', '.join(self.expected_trains)}\n"
                 f"but found: {', '.join(numbers)}")
             raise CheckFailed(message)
 

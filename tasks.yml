@@ -99,7 +99,54 @@ description: |
     File: `rajdhani/db.py` <br>
     Function: `search_trains`
 checks:
-  - check_not_implemented
+  - check_flag:
+      flag: flag_search_filters
+  - check_search_trains:
+      from_station: BCT
+      to_station: ADI
+      departure_time: "1"
+      expected_trains:
+        - "12009"
+        - "19011"
+  - check_search_trains:
+      from_station: BCT
+      to_station: ADI
+      departure_time: "5"
+      expected_trains:
+        - "12267"
+        - "12901"
+        - "59441"
+        - "09001"
+  - check_search_trains:
+      from_station: BCT
+      to_station: ADI
+      departure_time: ["1", "5"]
+      expected_trains:
+        - "12009"
+        - "19011"
+        - "12267"
+        - "12901"
+        - "59441"
+        - "09001"
+
+  - check_search_trains:
+      from_station: BCT
+      to_station: ADI
+      arrival_time: "1"
+      expected_trains:
+        - "12267"
+        - "12901"
+        - "59439"
+        - "09001"
+
+  - check_search_trains:
+      from_station: BCT
+      to_station: ADI
+      ticket_class: 1A
+      arrival_time: "1"
+      expected_trains:
+        - "12267"
+        - "12901"
 ---
 name: autocomplete
 title: Implement the autocomplete on the home page.
