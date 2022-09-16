@@ -89,12 +89,14 @@ def task_autocomplete(site):
     The autocomplete on the home page to select the from and to stations is
     a dummy implementation. Replace that with a correct implementation.
     """
-    assert "TK" in site.get_station_autocomplete("tk")
-    assert "TK" in site.get_station_autocomplete("Tumakuru")
-    assert "TK" in site.get_station_autocomplete("tk")
+    def assert_autocomplete(q, expected_stations):
+        assert sorted(site.get_station_autocomplete(q)) == sorted(expected_stations)
 
-    assert "MAQ" in site.get_station_autocomplete("Mangalu")
-    assert "MAJN" in site.get_station_autocomplete("Mangalu")
+    assert_autocomplete("sbc", ["SBC"])
+    assert_autocomplete("bangal", ["SBC", "BNCE", "BNC", "BJY"])
+    assert_autocomplete("guntur", ["GNT", "NGNT"])
+    assert_autocomplete("cst", ["CSTM"])
+    assert_autocomplete("chennai", ["MS", "MSC", "MAS", "MPKT", "MPK", "MSF", "MSB"])
 
 @task("search-trains")
 def task_search_trains():
