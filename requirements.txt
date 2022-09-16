@@ -3,3 +3,4 @@ Jinja2==3.0.3
 web.py
 markdown
 requests
+pyyaml==6.0
