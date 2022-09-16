@@ -138,20 +138,24 @@ class check_autocomplete(Check):
 
 @register_check
 class check_search_trains(Check):
-    def __init__(self, from_station, to_station, expected_trains):
+    def __init__(self, from_station, to_station, ticket_class=None, expected_trains=[]):
         self.from_station = from_station
         self.to_station = to_station
+        self.ticket_class = ticket_class
         self.expected_trains = [str(n) for n in expected_trains]
         self.title = f"Search Trains: {from_station} -> {to_station}"
+
+        if ticket_class:
+            self.title += f" [{self.ticket_class}]"
 
     def do_validate(self, site):
         params = {
             "from": self.from_station,
-            "to": self.to_station
+            "to": self.to_station,
+            "class": self.ticket_class
         }
         trains = site.get("/api/search", params=params).json()
 
-        print(trains)
         numbers = [str(t['number']) for t in trains]
 
         if sorted(numbers) != sorted(self.expected_trains):
