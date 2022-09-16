@@ -5,21 +5,6 @@ import datetime
 db_uri = os.getenv("RAJDHANI_DB_URI", "sqlite:///rajdhani.db")
 db = web.database(db_uri)
 
-def get_apps():
-    apps = db.select("app", order="score desc")
-    return [process_app(app) for app in apps]
-
-def get_app(name):
-    row = db.where("app", name=name).first()
-    if row:
-        return process_app(row)
-
-def process_app(app):
-    app.created = parse_timestamp(app.created)
-    app.last_updated = parse_timestamp(app.last_updated)
-    return app
-
-
 class TaskStatus:
     success = "success"
     current = "current"
