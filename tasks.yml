@@ -96,6 +96,20 @@ description: |
     Consider the arrival time and departure time filters when searching
     for trains.
 
+    There are 5 time slots available and each one is represented with
+    a string id.
+
+    * Early Morning - midnight to 8:00 am (id=slot1)
+    * Morning - 8:00 am to noon (id=slot2)
+    * Afternoon - noon to 4:00pm (id=slot3)
+    * Evening - 4:00 pm to 8:00pm (id=slot4)
+    * Night - 4:00 pm to 8:00pm (id=slot5)
+
+    The `search_trains` will get a list of slots for `departure_time`
+    and `arrival_time`. If any slots are provided, then only training
+    matching those constraints should be considered. When no slots are
+    provided, all trains should be included.
+
     File: `rajdhani/db.py` <br>
     Function: `search_trains`
 checks:
@@ -104,14 +118,14 @@ checks:
   - check_search_trains:
       from_station: BCT
       to_station: ADI
-      departure_time: "1"
+      departure_time: "slot1"
       expected_trains:
         - "12009"
         - "19011"
   - check_search_trains:
       from_station: BCT
       to_station: ADI
-      departure_time: "5"
+      departure_time: "slot5"
       expected_trains:
         - "12267"
         - "12901"
@@ -120,7 +134,7 @@ checks:
   - check_search_trains:
       from_station: BCT
       to_station: ADI
-      departure_time: ["1", "5"]
+      departure_time: ["slot1", "slot5"]
       expected_trains:
         - "12009"
         - "19011"
@@ -132,7 +146,7 @@ checks:
   - check_search_trains:
       from_station: BCT
       to_station: ADI
-      arrival_time: "1"
+      arrival_time: "slot1"
       expected_trains:
         - "12267"
         - "12901"
@@ -143,7 +157,7 @@ checks:
       from_station: BCT
       to_station: ADI
       ticket_class: 1A
-      arrival_time: "1"
+      arrival_time: "slot1"
       expected_trains:
         - "12267"
         - "12901"
@@ -200,24 +214,24 @@ checks:
   - check_flag:
       flag: flag_show_schedule_link
   - check_not_implemented
----
-name: seat-availability
-title: Show availability of seats for each train
-description: |
-  Enable showing the number of seats available in each ticket class
-  for each train in the search results by setting the flag
-  `flag_seat_availability` in the config to `True`.
+# ---
+# name: seat-availability
+# title: Show availability of seats for each train
+# description: |
+#   Enable showing the number of seats available in each ticket class
+#   for each train in the search results by setting the flag
+#   `flag_seat_availability` in the config to `True`.
 
-  Implement the function `get_seat_availability` that takes the
-  train number as argument and returns the seat avaiblity for
-  each ticket class.
+#   Implement the function `get_seat_availability` that takes the
+#   train number as argument and returns the seat avaiblity for
+#   each ticket class.
 
-  File: `rajdhani/db.py` <br>
-  Function: `get_seat_availability`
-checks:
-  - check_flag:
-      flag: flag_seat_availability
-  - check_not_implemented
+#   File: `rajdhani/db.py` <br>
+#   Function: `get_seat_availability`
+# checks:
+#   - check_flag:
+#       flag: flag_seat_availability
+#   - check_not_implemented
 ---
 name: book-ticket
 title: Implement booking a ticket.
@@ -249,16 +263,13 @@ description: |
 checks:
   - check_not_implemented
 ---
-name: login-with-magic-link
-title: Enable login with a magic link
+name: login-and-trips
+title: Enable login and show trips for the user
 description: |
-  Description coming soon
-checks:
-  - check_not_implemented
----
-name: my-trips
-title: Show my trips page for logged in users
-description: |
-  Description coming soon...
+  Enable login by enabling the flag `flag_login` and
+  implement `get_trips` function.
+
+  File: `rajdhani/db.py` <br>
+  Function: `get_trips`
 checks:
   - check_not_implemented
