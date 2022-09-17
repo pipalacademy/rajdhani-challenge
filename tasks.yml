@@ -1,8 +1,15 @@
 name: homepage
 title: Enable the homepage.
 description: |
-  Enable the home page by setting the feature flag `flag_homepage = True`
+
+  Your task is to enable home page on your website.
+
+  * Fork the repository https://github.com/pipalacademy/rajdhani
+  * Enable actions on your repo by visitng the Actions tab of your repo
+  * Enable the home page on your website by setting the feature flag `flag_homepage = True`
   in the `rajdhani/config.py`.
+
+  Once you commit and push your changes, your website will be updated.
 checks:
   - check_flag:
       flag: flag_homepage
