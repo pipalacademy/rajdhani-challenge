@@ -19,7 +19,9 @@ description: |
   returns a placeholder result. Replace that with the correct
   implementation.
 
-  For this task, you just need to focus on the from_station_code
+  For this task, you just need to focus on the `from_station` and
+  `to_station` of the train and no need to support for the
+  intermediate stations.
 
   File: `rajdhani/db.py`<br>
   Function: `search_trains`
