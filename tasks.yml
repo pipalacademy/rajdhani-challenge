@@ -176,6 +176,15 @@ title: Implement the autocomplete on the home page.
 description: |
   The autocomplete on the home page to select the from and to stations is
   a dummy implementation. Replace that with a correct implementation.
+
+  You need to implement the `search_stations` function in `db.py`. It
+  would get the text entered by user in the `from` or `to` autocomplete
+  elements on the home page and you need to find all the stations that
+  contain the entered text either in the station name or station code.
+  Please remember that you need to this in a case insenstive way.
+
+    File: `rajdhani/db.py` <br>
+    Function: `search_stations`
 checks:
   - check_autocomplete:
       q: sbc
@@ -222,7 +231,23 @@ description: |
 checks:
   - check_flag:
       flag: flag_show_schedule_link
-  - check_not_implemented
+  - check_schedule:
+      train: 12028
+      ensure_rows:
+        - [SBC, BANGALORE CITY JN, "1", "-", "06:00"]
+        - [BNC, BANGALORE CANT, "1", "06:08", "06:10"]
+        - [BNCE, BANGALORE EAST, "1", "06:12", "06:12"]
+        - [BYPL, BAIYYAPPANAHALI, "1", "06:15", "06:15"]
+        - [BBQ, BASIN BRIDGE JN, "1", "10:59", "10:59"]
+        - [MAS, CHENNAI CENTRAL, "1", "11:00", "-"]
+  - check_schedule:
+      train: 12628
+      ensure_rows:
+        - [NDLS, NEW DELHI, "1", "-", "21:15"]
+        - [CSB, SHIVAJI BRIDGE, "1", "21:16", "21:16"]
+        - [MTJ, MATHURA JN, "1", "23:08", "23:10"]
+        - [BPL, BHOPAL JN, "2", "06:55", "07:00"]
+        - [SBC, BANGALORE CITY JN, "3", "13:40", "-"]
 # ---
 # name: seat-availability
 # title: Show availability of seats for each train

@@ -5,6 +5,7 @@ import yaml
 from dataclasses import dataclass, asdict
 from collections import namedtuple
 from typing import List
+from bs4 import BeautifulSoup
 
 from hamr import HamrError, hamr
 
@@ -199,6 +200,33 @@ class check_search_trains(Check):
                     "with the following fields:\n" +
                     str(expected_keys) + "\n,"
                     "but found: " + str(list(t.keys())))
+                raise CheckFailed(message)
+
+@register_check
+class check_schedule(Check):
+    def __init__(self, train, ensure_rows):
+        self.train = train
+        self.ensure_rows = ensure_rows
+        self.title = f"Check schedule for train {train}"
+
+    def extract_table(self, html):
+        soup = BeautifulSoup(html, "lxml")
+        table = soup.select("table")[0]
+        return self.parse_table(table)
+
+    def parse_table(self, table):
+        return [self.parse_row(tr) for tr in table.select("tr")]
+
+    def parse_row(self, tr):
+        return [cell.text.strip() for cell in tr.select("th,td")]
+
+    def do_validate(self, site):
+        html = site.get(f"/trains/{self.train}").text
+        schedule = self.extract_table(html)
+
+        for row in self.ensure_rows:
+            if row not in schedule:
+                message = f"Missing following entry in the schedule of train {self.train}:\n {row}"
                 raise CheckFailed(message)
 
 @dataclass
