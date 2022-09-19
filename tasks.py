@@ -17,8 +17,12 @@ MAIL_FILE = "rajdhani.mail"
 class Site:
     def __init__(self, name):
         self.name = name
-        self.domain = f"{name}.{DOMAIN}"
-        self.base_url = f"https://{self.domain}"
+        if name == "localhost":
+            self.domain = f"localhost"
+            self.base_url = f"http://localhost:5050"
+        else:
+            self.domain = f"{name}.{DOMAIN}"
+            self.base_url = f"https://{self.domain}"
 
     def get(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
