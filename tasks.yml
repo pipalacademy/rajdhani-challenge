@@ -284,8 +284,17 @@ description: |
   Function: `book_ticket`
 checks:
   - check_flag:
-      flag: flag_ticket_booking
-  - check_not_implemented
+      flag: flag_bookings
+  - check_booking:
+      train_number: "12628"
+      from_station_code: NDLS
+      to_station_code: SBC
+      passenger_name: Evalu Ator
+      passenger_email: evalu@ator.dev
+      ticket_class: 3A
+      date: "2022-12-01"
+
+
 ---
 name: email-conformation
 title: Send an email to confirm the successful booking

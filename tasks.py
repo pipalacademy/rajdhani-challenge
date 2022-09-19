@@ -64,6 +64,29 @@ class Site:
                 break
         return dict(tasks=tasks, current_task=task.name)
 
+    def query(self, sql):
+        params = dict(q=sql)
+        url = "/data-explorer"
+        html = self.get(url, params=params).text
+        table = self.extract_table(html)
+        columns = table[0]
+        rows = table[1:]
+
+        # skip the serial number column at positon 0
+        return [dict(zip(columns[1:], row[1:])) for row in rows]
+
+    def extract_table(self, html):
+        soup = BeautifulSoup(html, "lxml")
+        table = soup.select("table")[0]
+        return self.parse_table(table)
+
+    def parse_table(self, table):
+        return [self.parse_row(tr) for tr in table.select("tr")]
+
+    def parse_row(self, tr):
+        return [cell.text.strip() for cell in tr.select("th,td")]
+
+
 @dataclass
 class CheckStatus:
     title: str
@@ -221,25 +244,67 @@ class check_schedule(Check):
         self.ensure_rows = ensure_rows
         self.title = f"Check schedule for train {train}"
 
-    def extract_table(self, html):
-        soup = BeautifulSoup(html, "lxml")
-        table = soup.select("table")[0]
-        return self.parse_table(table)
-
-    def parse_table(self, table):
-        return [self.parse_row(tr) for tr in table.select("tr")]
-
-    def parse_row(self, tr):
-        return [cell.text.strip() for cell in tr.select("th,td")]
 
     def do_validate(self, site):
         html = site.get(f"/trains/{self.train}").text
-        schedule = self.extract_table(html)
+        schedule = site.extract_table(html)
 
         for row in self.ensure_rows:
             if row not in schedule:
                 message = f"Missing following entry in the schedule of train {self.train}:\n {row}"
                 raise CheckFailed(message)
+
+@register_check
+class check_booking(Check):
+    def __init__(self, train_number, ticket_class, date,
+                from_station_code, to_station_code,
+                 passenger_name, passenger_email):
+        self.train_number = train_number
+        self.ticket_class = ticket_class
+        self.date = date
+        self.from_station_code = from_station_code
+        self.to_station_code = to_station_code
+        self.passenger_name = passenger_name
+        self.passenger_email = passenger_email
+
+        self.title = f"Check booking for train {self.train_number}:{self.ticket_class}, Date {date}, Passenger: {passenger_name} ({passenger_email})"
+
+    def do_validate(self, site):
+        data = {
+            "train": self.train_number,
+            "class": self.ticket_class,
+            "date": self.date,
+            "passenger_name": self.passenger_name,
+            "passenger_email": self.passenger_email,
+        }
+        response = site.post("/book-ticket", data=data)
+        response.raise_for_status()
+
+        q = """
+            SELECT
+                train_number, ticket_class, date,
+                from_station_code, to_station_code,
+                passenger_name, passenger_email
+            FROM booking
+            ORDER BY id DESC
+            LIMIT 1
+        """
+        result = site.query(q)
+        if not result:
+            raise CheckFailed("Could not make booking")
+
+        booking = result[0]
+        expected = dict(
+            train_number=self.train_number,
+            ticket_class=self.ticket_class,
+            date=self.date,
+            from_station_code=self.from_station_code,
+            to_station_code=self.to_station_code,
+            passenger_name=self.passenger_name,
+            passenger_email=self.passenger_email)
+
+        if booking != expected:
+            raise CheckFailed(f"Booking mismatch\nExpected: {expected}\nFound: {booking}")
 
 @register_check
 class check_ticket_confirmation_email(Check):
