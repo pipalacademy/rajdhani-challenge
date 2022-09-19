@@ -6,10 +6,13 @@ from dataclasses import dataclass, asdict
 from collections import namedtuple
 from typing import List
 from bs4 import BeautifulSoup
+from email.parser import Parser as EmailParser
+from pathlib import Path
 
 from hamr import HamrError, hamr
 
 DOMAIN = "rajdhani.pipal.in"
+MAIL_FILE = "rajdhani.mail"
 
 class Site:
     def __init__(self, name):
@@ -281,6 +284,26 @@ class Task:
             raise ValueError(f"Invalid check: {check_data}")
 
 TASKS = Task.load_from_file("tasks.yml")
+
+def get_last_email():
+    """Returns an email.message.Message instance
+
+    It can be used like this:
+    ```
+    # Headers:
+    from_ = msg["X-MailFrom"]
+    to = msg["X-RcptTo"]  # comma separated list
+
+    # Body:
+    body = msg.get_payload()
+    ```
+    """
+    if not Path(MAIL_FILE).exists():
+        return None
+
+    p = EmailParser()
+    with open(MAIL_FILE) as f:
+        return p.parse(f)
 
 def main():
     import sys, json
