@@ -29,6 +29,11 @@ class Site:
         print("GET", url)
         return requests.get(url, **kwargs)
 
+    def post(self, path, **kwargs):
+        url = self.base_url.rstrip("/") + path
+        print("POST", url)
+        return requests.post(url, **kwargs)
+
     def sync(self):
         HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
 
@@ -235,6 +240,37 @@ class check_schedule(Check):
             if row not in schedule:
                 message = f"Missing following entry in the schedule of train {self.train}:\n {row}"
                 raise CheckFailed(message)
+
+@register_check
+class check_ticket_confirmation_email(Check):
+    def __init__(self, train, ticket_class, date,
+                 passenger_name, passenger_email):
+        self.train = train
+        self.ticket_class = ticket_class
+        self.date = date
+        self.passenger_name = passenger_name
+        self.passenger_email = passenger_email
+
+        self.title = f"Check booking confirmation email -> Train {self.train}:{self.ticket_class}, Date {date}, Passenger: {passenger_name} ({passenger_email})"
+
+    def make_booking(self, site):
+        site.post("/book-ticket", data={
+            "train": self.train,
+            "class": self.ticket_class,
+            "date": self.date,
+            "passenger_name": self.passenger_name,
+            "passenger_email": self.passenger_email
+        })
+
+    def do_validate(self, site):
+        self.make_booking(site)
+
+        email = get_last_email()
+        if not email or self.passenger_email not in email["X-RcptTo"]:
+            raise CheckFailed(
+                f"Confirmation email not received for booking with email: {self.passenger_email}"
+            )
+
 
 @dataclass
 class TaskStatus:

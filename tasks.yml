@@ -295,7 +295,18 @@ description: |
   File: `rajdhani/booking.py` <br>
   Function: `send_email_confirmation`
 checks:
-  - check_not_implemented
+  - check_ticket_confirmation_email:
+      train: "12028"
+      ticket_class: "CC"
+      date: "2022-09-30"
+      passenger_name: "Eva Lu Ator"
+      passenger_email: "evaluator@example.com"
+  - check_ticket_confirmation_email:
+      train: "16227"
+      ticket_class: "FC"
+      date: "2022-09-28"
+      passenger_name: "Lem E Tweakit"
+      passenger_email: "lemetweakit@example.com"
 ---
 name: login-and-trips
 title: Enable login and show trips for the user
