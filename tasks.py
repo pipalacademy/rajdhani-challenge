@@ -56,7 +56,7 @@ class Site:
         return self.session.post(url, headers=headers, **kwargs)
 
     def login(self, email):
-        return self.post("/login", data={"email": email})
+        return self.get(f"/login?email={email}")
 
     def sync(self):
         HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
@@ -386,15 +386,14 @@ class check_get_trips(Check):
             card_body = card.find("div", class_="card-body")
             date_and_class = card_body.find(class_="mb-3").get_text()
             date = date_and_class[
-                date_and_class.index("Date: "):date_and_class.index(",")
+                date_and_class.index("Date: ")+6:date_and_class.index(",")
             ]
-            ticket_class = date_and_class[date_and_class.index(", Class: "):]
+            ticket_class = date_and_class[date_and_class.index(", Class: ")+9:]
             booking = {
                 "train": train_number.strip(),
                 "class": ticket_class.strip(),
                 "date": date.strip(),
             }
-            print(booking)
 
             yield booking
 
