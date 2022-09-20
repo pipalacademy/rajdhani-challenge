@@ -82,8 +82,8 @@ class App:
             db.update("task",
                 status=status,
                 checks=checks,
-                where="name=$name",
-                vars={"name": name})
+                where="name=$name and app_id=$app_id",
+                vars={"name": name, "app_id": self.id})
         else:
             db.insert("task",
                 app_id=self.id,
