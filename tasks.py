@@ -24,15 +24,24 @@ class Site:
             self.domain = f"{name}.{DOMAIN}"
             self.base_url = f"https://{self.domain}"
 
+    def _get_headers(self):
+        return {
+            "X-HAMR-TEST": "1",
+        }
+
     def get(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
+        headers = kwargs.pop("headers", {})
+        headers.update(self._get_headers())
         print("GET", url)
-        return requests.get(url, **kwargs)
+        return requests.get(url, headers=headers, **kwargs)
 
     def post(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
+        headers = kwargs.pop("headers", {})
+        headers.update(self._get_headers())
         print("POST", url)
-        return requests.post(url, **kwargs)
+        return requests.post(url, headers=headers, **kwargs)
 
     def sync(self):
         HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
