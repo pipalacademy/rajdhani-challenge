@@ -8,6 +8,7 @@ from typing import List
 from bs4 import BeautifulSoup
 from email.parser import Parser as EmailParser
 from pathlib import Path
+import contextlib
 
 from hamr import HamrError, hamr
 
@@ -24,24 +25,38 @@ class Site:
             self.domain = f"{name}.{DOMAIN}"
             self.base_url = f"https://{self.domain}"
 
+        self.session = requests
+
     def _get_headers(self):
         return {
             "X-HAMR-TEST": "1",
         }
+
+    @contextlib.contextmanager
+    def with_session(self):
+        with requests.Session() as sess:
+            self.session = sess
+            try:
+                yield self.session
+            finally:
+                self.session = requests
 
     def get(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
         headers = kwargs.pop("headers", {})
         headers.update(self._get_headers())
         print("GET", url)
-        return requests.get(url, headers=headers, **kwargs)
+        return self.session.get(url, headers=headers, **kwargs)
 
     def post(self, path, **kwargs):
         url = self.base_url.rstrip("/") + path
         headers = kwargs.pop("headers", {})
         headers.update(self._get_headers())
         print("POST", url)
-        return requests.post(url, headers=headers, **kwargs)
+        return self.session.post(url, headers=headers, **kwargs)
+
+    def login(self, email):
+        return self.post("/login", data={"email": email})
 
     def sync(self):
         HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
@@ -94,6 +109,16 @@ class Site:
 
     def parse_row(self, tr):
         return [cell.text.strip() for cell in tr.select("th,td")]
+
+    def make_booking(self, train, ticket_class, date,
+                     passenger_name, passenger_email):
+        self.post("/book-ticket", data={
+            "train": train,
+            "class": ticket_class,
+            "date": date,
+            "passenger_name": passenger_name,
+            "passenger_email": passenger_email
+        })
 
 
 @dataclass
@@ -327,25 +352,70 @@ class check_ticket_confirmation_email(Check):
 
         self.title = f"Check booking confirmation email -> Train {self.train}:{self.ticket_class}, Date {date}, Passenger: {passenger_name} ({passenger_email})"
 
-    def make_booking(self, site):
-        site.post("/book-ticket", data={
-            "train": self.train,
-            "class": self.ticket_class,
-            "date": self.date,
-            "passenger_name": self.passenger_name,
-            "passenger_email": self.passenger_email
-        }, headers={
-            "X-HAMR-TEST": "1",
-        })
-
     def do_validate(self, site):
-        self.make_booking(site)
+        site.make_booking(train=self.train, ticket_class=self.ticket_class,
+                          date=self.date, passenger_name=self.passenger_name,
+                          passenger_email=self.passenger_email)
 
         email = get_last_email()
         if not email or self.passenger_email not in email["X-RcptTo"]:
             raise CheckFailed(
                 f"Confirmation email not received for booking with email: {self.passenger_email}"
             )
+
+
+@register_check
+class check_get_trips(Check):
+    def __init__(self, bookings):
+        """
+        Each booking should be a dict of train, class, date
+        """
+        self.title = "Show bookings for a logged in user"
+        self.bookings = bookings
+        self.passenger_name = "Eva Lu Ator"
+        self.passenger_email = "evaluator@example.com"
+
+    def get_bookings_from_html(self, html):
+        soup = BeautifulSoup(html)
+        booking_cards = soup.find_all("div", class_="card")
+        for card in booking_cards:
+            card_header = card.find("div", class_="card-header").get_text()
+            train_number = card_header[
+                card_header.index("(")+1:card_header.index(")")
+            ]
+            card_body = card.find("div", class_="card-body")
+            date_and_class = card_body.find(class_="mb-3").get_text()
+            date = date_and_class[
+                date_and_class.index("Date: "):date_and_class.index(",")
+            ]
+            ticket_class = date_and_class[date_and_class.index(", Class: "):]
+            booking = {
+                "train": train_number.strip(),
+                "class": ticket_class.strip(),
+                "date": date.strip(),
+            }
+            print(booking)
+
+            yield booking
+
+    def do_validate(self, site):
+        with site.with_session():
+            site.login("evaluator@example.com")
+            for booking in self.bookings:
+                train, ticket_class, date = booking["train"], booking["class"], booking["date"]
+                site.make_booking(
+                    train=train, ticket_class=ticket_class, date=date,
+                    passenger_name=self.passenger_name,
+                    passenger_email=self.passenger_email
+                )
+
+            bookings_html = site.get("/bookings").text
+            gotten_bookings = list(self.get_bookings_from_html(bookings_html))
+            for booking in self.bookings:
+                if booking not in gotten_bookings:
+                    raise CheckFailed(
+                        f"Booking not found in bookings page of {self.passenger_email}: {booking}"
+                    )
 
 
 @dataclass

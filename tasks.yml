@@ -326,4 +326,9 @@ description: |
   File: `rajdhani/db.py` <br>
   Function: `get_trips`
 checks:
-  - check_not_implemented
+  - check_flag:
+      flag: flag_login
+  - check_get_trips:
+      bookings:
+        - {"train": "12028", "class": "CC", "date": "2022-09-25"}
+        - {"train": "04728", "class": "3A", "date": "2022-09-28"}
