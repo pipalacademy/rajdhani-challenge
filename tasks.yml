@@ -112,7 +112,7 @@ description: |
     * Morning - 8:00 am to noon (id=slot2)
     * Afternoon - noon to 4:00pm (id=slot3)
     * Evening - 4:00 pm to 8:00pm (id=slot4)
-    * Night - 4:00 pm to 8:00pm (id=slot5)
+    * Night - 8:00 pm to midnight (id=slot5)
 
     The `search_trains` will get a list of slots for `departure_time`
     and `arrival_time`. If any slots are provided, then only training
