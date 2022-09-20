@@ -325,6 +325,8 @@ class check_ticket_confirmation_email(Check):
             "date": self.date,
             "passenger_name": self.passenger_name,
             "passenger_email": self.passenger_email
+        }, headers={
+            "X-HAMR-TEST": "1",
         })
 
     def do_validate(self, site):
