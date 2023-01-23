@@ -35,7 +35,9 @@ def app_page(name):
 def app_deploy(name):
     app = App.find(name)
     if not app:
-        abort(404)
+        Site(name).create()
+        app = App.create(name)
+
     site = Site(app.name)
     sync_status = site.sync()
     if not sync_status.ok:

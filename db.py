@@ -30,6 +30,16 @@ class App:
         if row:
             return cls(row)
 
+    @classmethod
+    def create(cls, name, git_url=None):
+        db.insert(
+            "app",
+            name=name,
+            score=0,
+            current_task="homepage",
+        )
+        return cls.find(name)
+
     def is_task_done(self, task_name):
         rows = db.where("task", app_id=self.id, name=task_name)
         return bool(rows)

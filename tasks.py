@@ -15,6 +15,9 @@ from hamr import HamrError, hamr
 DOMAIN = "rajdhani.pipal.in"
 MAIL_FILE = "rajdhani.mail"
 
+HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
+
+
 class Site:
     def __init__(self, name):
         self.name = name
@@ -31,6 +34,18 @@ class Site:
         return {
             "X-HAMR-TEST": "1",
         }
+
+    def create(self, git_url=None):
+        name = self.name
+        if not git_url:
+            git_url = f"https://github.com/{name}/rajdhani"
+
+        try:
+            hamr.create_app(app_name=name, git_url=git_url)
+        except HamrError as e:
+            return HamrResponse(ok=False, message=str(e))
+
+        return HamrResponse(ok=True, message="")
 
     @contextlib.contextmanager
     def with_session(self):
@@ -59,8 +74,6 @@ class Site:
         return self.get(f"/login?email={email}")
 
     def sync(self):
-        HamrResponse = namedtuple("HamrResponse", ["ok", "message"])
-
         try:
             hamr.sync_app(self.name)
         except HamrError as e:
