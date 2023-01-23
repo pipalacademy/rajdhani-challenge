@@ -52,6 +52,11 @@ description: |
     Update the `search_trains` function to consider only the trains
     that has that ticket class.
 
+    Note: The `ticket_class` argument is a string, and will always
+      be one of "SL", "3A", "2A", "1A", "FC", "CC". In the web
+      UI, this will be shown in parentheses with the full name
+      of the ticket class.
+
     File: `rajdhani/db.py` <br>
     Function: `search_trains`
 checks:
@@ -115,7 +120,7 @@ description: |
     * Night - 8:00 pm to midnight (id=slot5)
 
     The `search_trains` will get a list of slots for `departure_time`
-    and `arrival_time`. If any slots are provided, then only training
+    and `arrival_time`. If any slots are provided, then only trains
     matching those constraints should be considered. When no slots are
     provided, all trains should be included.
 
