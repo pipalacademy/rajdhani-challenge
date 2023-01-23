@@ -228,11 +228,11 @@ description: |
     Enable link to show the schedule of each train in the search results
     by setting the flag `flag_show_schedule_link` in the config to `True`.
 
-    Implement the `get_train_schedule` function that takes the
+    Implement the `get_schedule` function that takes the
     train number as argument and returns the schedule.
 
     File: `rajdhani/db.py` <br>
-    Function: `get_train_schedule`
+    Function: `get_schedule`
 checks:
   - check_flag:
       flag: flag_show_schedule_link
@@ -276,7 +276,7 @@ name: book-ticket
 title: Implement booking a ticket.
 description: |
   Enable ticket booking by setting the flag
-  `flag_ticket_booking` in the config to `True`.
+  `flag_bookings` in the config to `True`.
 
   Implement the function `book_ticket` that takes train
   and passenger details and books a ticket by adding an entry
@@ -305,8 +305,13 @@ name: email-conformation
 title: Send an email to confirm the successful booking
 description: |
   Send an email to the passenger confirming the reservation.
+  You can use the SMTP credentials from `config.py` to do that.
 
-  File: `rajdhani/booking.py` <br>
+  Note: For testing locally, you can install the
+    [aiosmtpd](https://aiosmtpd.readthedocs.io/en/latest/) package with pip
+    and start an SMTP server on port 8025 with `python3 -m aiosmtpd -n`.
+
+  File: `rajdhani/notifications.py` <br>
   Function: `send_email_confirmation`
 checks:
   - check_ticket_confirmation_email:
