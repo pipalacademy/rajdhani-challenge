@@ -307,12 +307,15 @@ description: |
   Send an email to the passenger confirming the reservation.
   You can use the SMTP credentials from `config.py` to do that.
 
+  The booking argument is a dict with keys: `id`, `passenger_name`,
+    `passenger_email`, `train_number`, `train_name`, `ticket_class`, and `date`. 
+
   Note: For testing locally, you can install the
     [aiosmtpd](https://aiosmtpd.readthedocs.io/en/latest/) package with pip
     and start an SMTP server on port 8025 with `python3 -m aiosmtpd -n`.
 
   File: `rajdhani/notifications.py` <br>
-  Function: `send_email_confirmation`
+  Function: `send_booking_confirmation`
 checks:
   - check_ticket_confirmation_email:
       train: "12028"
