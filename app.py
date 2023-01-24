@@ -20,7 +20,7 @@ def app_context():
 @app.route("/")
 def home():
     apps = App.find_all()
-    internal_users = ["pipalacademy"]
+    internal_users = ["nikochiko", "anandology", "pipalacademy"]
     apps = [app for app in apps if app.name not in internal_users]
     return render_template("index.html", apps=apps)
 
