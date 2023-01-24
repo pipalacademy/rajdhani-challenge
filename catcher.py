@@ -41,7 +41,7 @@ def get_latest_message(mail_file):
 if __name__ == "__main__":
     mail_file = sys.argv[1] if len(sys.argv) > 1 else "rajdhani.mail"
 
-    controller = Controller(MailFile(mail_file))
+    controller = Controller(MailFile(mail_file), hostname="", port=8025)
     controller.start()
 
     # controller thread has started
