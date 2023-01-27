@@ -1,4 +1,4 @@
-from flask import Flask, render_template, abort, jsonify
+from flask import Flask, render_template, abort, jsonify, redirect
 from jinja2 import Markup
 from db import App
 import web
@@ -29,6 +29,8 @@ def app_page(name):
     app = App.find(name)
     if not app:
         abort(404)
+    if app.name != name:
+        return redirect(f"/{app.name}")
     return render_template("app.html", app=app, tasks=TASKS)
 
 @app.route("/<name>/deploy", methods=["POST"])

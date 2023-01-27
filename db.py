@@ -26,7 +26,8 @@ class App:
 
     @classmethod
     def find(cls, name):
-        row = db.where("app", name=name).first()
+        row = db.query("SELECT * FROM app WHERE lower(name)=lower($name)",
+                       vars={"name": name}).first()
         if row:
             return cls(row)
 
