@@ -64,7 +64,7 @@ class App:
         db.update("app", **kwargs, where="id=$id", vars={"id": self.id})
 
     def update_score(self):
-        rows = db.where("task", app_id=self.id).list()
+        rows = db.where("task", app_id=self.id, status='pass').list()
         score = len(rows)
         self._update(score=score)
 

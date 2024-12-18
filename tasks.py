@@ -75,7 +75,8 @@ class Site:
 
     def sync(self):
         try:
-            hamr.sync_app(self.name)
+            #hamr.sync_app(self.name)
+            pass
         except HamrError as e:
             return HamrResponse(ok=False, message=str(e))
 
@@ -167,6 +168,8 @@ class Check:
         except CheckFailed as e:
             return status.fail(str(e))
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             return status.error(str(e))
 
     def do_validate(self, site):
@@ -327,12 +330,26 @@ class check_booking(Check):
         response = site.post("/book-ticket", data=data)
         response.raise_for_status()
 
+
+        q = """SELECT * FROM booking ORDER BY id DESC LIMIT 1"""
+        result = site.query(q)
+        if not result:
+            raise CheckFailed("Could not find any bookings")
+
+        row = result[0]
+
+
+        for k in "train_number ticket_class date passenger_name passenger_email".split():
+            if k not in row:
+                raise CheckFailed(f"Missing {k!r} column in table booking")
+
         q = """
             SELECT
-                train_number, ticket_class, date,
-                from_station_code, to_station_code,
-                passenger_name, passenger_email
-            FROM booking
+                b.train_number, b.ticket_class, b.date,
+                b.passenger_name, b.passenger_email,
+                t.from_station_code, t.to_station_code
+            FROM booking  b
+            JOIN train t ON b.train_number=t.number
             ORDER BY id DESC
             LIMIT 1
         """
@@ -389,7 +406,7 @@ class check_get_trips(Check):
         self.passenger_email = "evaluator@example.com"
 
     def get_bookings_from_html(self, html):
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, "lxml")
         booking_cards = soup.find_all("div", class_="card")
         for card in booking_cards:
             card_header = card.find("div", class_="card-header").get_text()

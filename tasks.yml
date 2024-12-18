@@ -282,9 +282,6 @@ description: |
   and passenger details and books a ticket by adding an entry
   in the database table.
 
-  After booking a ticket, the number of available seats for that
-  train in the booked ticket class should be reduced by one.
-
   File: `rajdhani/db.py` <br>
   Function: `book_ticket`
 checks:
@@ -300,35 +297,6 @@ checks:
       date: "2022-12-01"
 
 
----
-name: email-conformation
-title: Send an email to confirm the successful booking
-description: |
-  Send an email to the passenger confirming the reservation.
-  You can use the SMTP credentials from `config.py` to do that.
-
-  The booking argument is a dict with keys: `id`, `passenger_name`,
-    `passenger_email`, `train_number`, `train_name`, `ticket_class`, and `date`. 
-
-  Note: For testing locally, you can install the
-    [aiosmtpd](https://aiosmtpd.readthedocs.io/en/latest/) package with pip
-    and start an SMTP server on port 8025 with `python3 -m aiosmtpd -n`.
-
-  File: `rajdhani/notifications.py` <br>
-  Function: `send_booking_confirmation`
-checks:
-  - check_ticket_confirmation_email:
-      train: "12028"
-      ticket_class: "CC"
-      date: "2022-09-30"
-      passenger_name: "Eva Lu Ator"
-      passenger_email: "evaluator@example.com"
-  - check_ticket_confirmation_email:
-      train: "16227"
-      ticket_class: "FC"
-      date: "2022-09-28"
-      passenger_name: "Lem E Tweakit"
-      passenger_email: "lemetweakit@example.com"
 ---
 name: login-and-trips
 title: Enable login and show trips for the user

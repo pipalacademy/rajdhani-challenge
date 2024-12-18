@@ -31,6 +31,10 @@ def app_page(name):
         abort(404)
     if app.name != name:
         return redirect(f"/{app.name}")
+
+    site = Site(app.name)
+    status = site.get_status()
+    app.update_status(status)
     return render_template("app.html", app=app, tasks=TASKS)
 
 @app.route("/<name>/deploy", methods=["POST"])
@@ -52,4 +56,4 @@ def app_deploy(name):
     return jsonify(status)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(port=5050)
